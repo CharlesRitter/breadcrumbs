@@ -1,8 +1,17 @@
 package edu.cuhackit.breadcrumbs;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
+import io.radar.sdk.Radar;
+import io.radar.sdk.model.RadarEvent;
+import io.radar.sdk.model.RadarGeofence;
+import io.radar.sdk.model.RadarUser;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -10,6 +19,9 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -39,9 +51,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+
+        Radar.initialize("prj_test_pk_b2451fcc967db99f2912c986d8c75cea785ca5d0");
+        MyRadarReceiver mine = new MyRadarReceiver();
+
+        Radar.trackOnce(new Radar.RadarCallback() {
+            @Override
+            public void onComplete(Radar.RadarStatus status, Location location, RadarEvent[] events, RadarUser user) {
+
+                LatLng first = new LatLng(location.getLatitude(), location.getLongitude());
+
+                mMap.addMarker(new MarkerOptions().position(first).title("You are Here"));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(first));
+
+                /*LatLng walk = new LatLng(first.latitude + .5, first.longitude + .5);
+                location.setLatitude(walk.latitude);
+                location.setLongitude(walk.longitude);
+
+                Radar.updateLocation(location, new Radar.RadarCallback(){
+                    @Override
+                    public void onComplete(@NotNull Radar.RadarStatus radarStatus, @Nullable Location location, @Nullable RadarEvent[] radarEvents, @Nullable RadarUser radarUser) {
+
+                    }
+                });*/
+
+            }
+        });
+
+        Radar.startTracking();
     }
 }
