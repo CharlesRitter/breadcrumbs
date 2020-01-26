@@ -11,10 +11,13 @@ public class StoryClass {
 
     private String id;
 
-    StoryClass(double la, double ln, String i){
+    private String caption;
+
+    StoryClass(double la, double ln, String i, String c){
         lat = la;
         lng = ln;
         id = i;
+        caption = c;
     }
 
     private double getLat(){
