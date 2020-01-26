@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 import io.radar.sdk.Radar;
 import io.radar.sdk.model.Coordinate;
+import io.radar.sdk.model.RadarCircleGeometry;
 import io.radar.sdk.model.RadarEvent;
 import io.radar.sdk.model.RadarGeofence;
 import io.radar.sdk.model.RadarUser;
@@ -91,6 +92,49 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Radar.trackOnce(new Radar.RadarCallback() {
             @Override
             public void onComplete(Radar.RadarStatus status, Location location, RadarEvent[] events, RadarUser user) {
+
+                ArrayList<LatLng> coordList = new ArrayList<>();
+                Log.i(TAG, "user geofences: " + user.getGeofences().length);
+                if(user.getGeofences() != null){
+                    for(RadarGeofence geofence: user.getGeofences()){
+                        RadarCircleGeometry geoshape = (RadarCircleGeometry) geofence.getGeometry();
+                        Coordinate center = geoshape.getCenter();
+                        LatLng coord = new LatLng(center.getLatitude(), center.getLongitude());
+                        coordList.add(coord);
+                    }
+                }
+
+                for(LatLng coordinate: coordList){
+                    //Log.i(TAG, coordinate.latitude + " " + coordinate.longitude);
+                    DecimalFormat df = new DecimalFormat("##.0000");
+                    df.setRoundingMode(RoundingMode.DOWN);
+                    //df.setMinimumFractionDigits(4);
+                    double tempLat = Double.parseDouble(df.format(coordinate.latitude));
+                    double tempLong = Double.parseDouble(df.format(coordinate.longitude));
+                    LatLng truncatedCoord = new LatLng(tempLat, tempLong);
+                    Log.i(TAG, "tempLat: " + tempLat + "\n" +
+                            "tempLong: " + tempLong);
+
+
+                    mMap.addMarker(new MarkerOptions().position(truncatedCoord).title("Watt"));
+                    mMap.setOnMarkerClickListener(marker -> {
+                        //if(marker.getTitle() != "Watt") return false;
+
+                        LatLng markerCoords = marker.getPosition();
+
+                        double lat = markerCoords.latitude;
+                        double lng = markerCoords.longitude;
+
+                        Intent i = new Intent(getApplicationContext(), StoryActivity.class);
+                        i.putExtra("lat", lat);
+                        i.putExtra("lng", lng);
+
+                        startActivity(i);
+
+                        return true;
+                    });
+                }
+
 
                 try {
                     LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
