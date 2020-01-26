@@ -1,12 +1,16 @@
 package edu.cuhackit.breadcrumbs;
 
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
+import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
+import com.google.android.gms.maps.model.LatLng;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -20,17 +24,10 @@ import io.radar.sdk.model.RadarEvent;
 import io.radar.sdk.model.RadarUser;
 
 public class MyRadarReceiver extends RadarReceiver {
-    private static MutableLiveData<ArrayList<Coordinate>> radarCoords;
+
     final static String TAG = "RadarReceiver";
 
-    public static LiveData<ArrayList<Coordinate>> getRadarCoords(){
-        Log.i(TAG, "inside getter");
-        if(radarCoords == null){
-            radarCoords = new MutableLiveData<>();
-        }
-        Log.i(TAG, "radarCoords = " + radarCoords);
-        return radarCoords;
-    }
+
 
     @Override
     public void onError(@NotNull Context context, @NotNull Radar.RadarStatus radarStatus) {
@@ -59,23 +56,25 @@ public class MyRadarReceiver extends RadarReceiver {
         Toast.makeText(context, "Event Triggered", Toast.LENGTH_SHORT).show();
         //Toast.makeText(context, "Event Triggered", Toast.LENGTH_SHORT).show();
 
-        ArrayList<Coordinate> coordList = new ArrayList<>();
+        ArrayList<LatLng> coordList = new ArrayList<>();
 
         for (int i = 0; i < radarEvents.length; i++) { //loop through events
             //if event is User Entering Geofence
             if (radarEvents[i].getType() == RadarEvent.RadarEventType.USER_ENTERED_GEOFENCE) {
                 //get the coordinates
-                RadarCircleGeometry geoshape = (RadarCircleGeometry) radarEvents[0].getGeofence().getGeometry();
+                RadarCircleGeometry geoshape = (RadarCircleGeometry) radarEvents[i].getGeofence().getGeometry();
                 Coordinate center = geoshape.getCenter();
-                coordList.add(center);
-
-                //MutableLiveData<ArrayList<Coordinate>> temp = new MutableLiveData<>();
-                radarCoords.postValue(coordList);
-                //radarCoords = temp;
-//                Log.i(TAG, "radarCoords size = " + radarCoords.getValue().size());
+                LatLng coord = new LatLng(center.getLatitude(), center.getLongitude());
+                coordList.add(coord);
             }
         }
         Log.i(TAG, "coordList length: " + coordList.size());
+
+        //https://stackoverflow.com/questions/38954261/how-to-pass-data-from-broadcastreceiver-to-activity-without-in-oncreate
+        Intent i = new Intent("mycustombroadcast");
+        //i.putExtra("phone_num", coordList.size());
+        i.putParcelableArrayListExtra("list", coordList);
+        context.sendBroadcast(i);
     }
 
 }

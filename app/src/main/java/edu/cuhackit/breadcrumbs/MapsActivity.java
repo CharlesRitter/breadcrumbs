@@ -1,6 +1,9 @@
 package edu.cuhackit.breadcrumbs;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -38,7 +41,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     final static String TAG = "MapsActivity";
 
-    private Double[] currentCoords;
+    private BroadcastReceiver broadcastReceiver;
+    private ArrayList<LatLng> coordList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,24 +93,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         Radar.startTracking();
-        LatLng geofenceCenter = new LatLng(34.67600673480939, -82.83691123558198);
-        mMap.addMarker(new MarkerOptions().position(geofenceCenter).title("Watt"));
-        /*
-        Log.i(TAG, MyRadarReceiver.getRadarCoords().getValue() + "");
 
-        MyRadarReceiver.getRadarCoords().observe(this, obs -> {
-            Log.i(TAG, "entered observer");
-           ArrayList<Coordinate> coordList = MyRadarReceiver.getRadarCoords().getValue();
-           Log.i(TAG, "coordList = ");
-           for (Coordinate coord: coordList){
-               Log.i(TAG, "Lat:" + coord.getLatitude());
-               LatLng eventCoord = new LatLng(coord.getLatitude(), coord.getLongitude());
-               mMap.addMarker(new MarkerOptions().position(eventCoord));
-           }
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                //Bundle bundle = intent.getExtras();
+                coordList = intent.getParcelableArrayListExtra("list");
+                Log.i(TAG, "list size: " + coordList.size());
 
-        });
+                for(LatLng coordinate: coordList){
+                    mMap.addMarker(new MarkerOptions().position(coordinate).title("Watt"));
+                }
+            }
+        };
 
-         */
+        registerReceiver(broadcastReceiver, new IntentFilter("mycustombroadcast"));
+
+        //LatLng geofenceCenter = new LatLng(34.67600673480939, -82.83691123558198);
+        //mMap.addMarker(new MarkerOptions().position(geofenceCenter).title("Watt"));
     }
 
 
@@ -114,5 +118,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onDestroy(){
         super.onDestroy();
         Radar.stopTracking();
+        unregisterReceiver(broadcastReceiver);
     }
 }
