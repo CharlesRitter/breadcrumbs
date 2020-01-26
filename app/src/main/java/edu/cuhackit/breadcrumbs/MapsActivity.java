@@ -10,6 +10,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 import io.radar.sdk.Radar;
+import io.radar.sdk.model.Coordinate;
 import io.radar.sdk.model.RadarEvent;
 import io.radar.sdk.model.RadarGeofence;
 import io.radar.sdk.model.RadarUser;
@@ -23,10 +24,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import android.content.Context;
+
+import java.util.Observer;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+
     final static String TAG = "MapsActivity";
 
     @Override
@@ -37,6 +42,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
         Log.i(TAG, "Tracking: " + Radar.isTracking());
     }
 
@@ -62,6 +68,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Radar.initialize("prj_test_pk_b2451fcc967db99f2912c986d8c75cea785ca5d0"); //Jemiah's key
         Radar.initialize("prj_test_pk_668bab55b5fbac2e7a4a28247c3d57ccfb5160e3"); //Nikita's key
 
+        //initial position
         Radar.trackOnce(new Radar.RadarCallback() {
             @Override
             public void onComplete(Radar.RadarStatus status, Location location, RadarEvent[] events, RadarUser user) {
