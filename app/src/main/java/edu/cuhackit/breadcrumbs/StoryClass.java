@@ -18,18 +18,31 @@ public class StoryClass {
         lng = ln;
         id = i;
         caption = c;
+        img = null;
     }
 
-    private double getLat(){
+    public String getCap(){
+        return caption;
+    }
+
+    public double getLat(){
         return lat;
     }
 
-    private double getLng(){
+    public double getLng(){
         return lng;
     }
 
-    private String getId(){
+    public String getId(){
         return id;
+    }
+
+    public void setImg(Bitmap b){
+        img = b;
+    }
+
+    public Bitmap getImg(){
+        return img;
     }
 
 }

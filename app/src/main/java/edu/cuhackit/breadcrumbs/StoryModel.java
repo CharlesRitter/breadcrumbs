@@ -1,18 +1,16 @@
 package edu.cuhackit.breadcrumbs;
 
 import android.app.Application;
-import android.content.Context;
-import android.location.Location;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,38 +22,51 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.radar.sdk.Radar;
-import io.radar.sdk.RadarReceiver;
-import io.radar.sdk.model.Coordinate;
-import io.radar.sdk.model.RadarCircleGeometry;
-import io.radar.sdk.model.RadarEvent;
-import io.radar.sdk.model.RadarUser;
-
 public class StoryModel extends AndroidViewModel {
-
-
 
     public static final String serverAddr = "http://34.203.71.55:11664/";
 
-    private static LiveData<List<StoryClass>> storyList;
-
-    private static LiveData<Double[]> currentCoordinates;
-
-    private static LiveData<ArrayList<Coordinate>> radarCoords;
+    private static MutableLiveData<List<StoryClass>> storyList;
 
     public StoryModel(@NonNull Application application) {
         super(application);
     }
 
-    public static class QueryStoryMeta extends AsyncTask<Double, Void, MutableLiveData>{
+    public static LiveData<List<StoryClass>> getStoryList(double lat, double lng){
+        if(storyList == null) {
+            storyList = new MutableLiveData<>();
+            loadStories(lat, lng);
+        }
+
+        return storyList;
+    }
+
+    public static void loadStories(double lat, double lng){
+        Double[] inputArr = new Double[2];
+        inputArr[0] = lat;
+        inputArr[1] = lng;
+
+        new QueryStories().execute(inputArr);
+    }
+
+
+    public void reset(){
+        storyList = null;
+    }
+
+
+    public static class QueryStories extends AsyncTask<Double, Void, List<StoryClass>>{
 
         @Override
-        protected MutableLiveData doInBackground(Double... coords) {
-            List<StoryClass> result = null;
-
-            try{
-                URL url = new URL(serverAddr + "storyMetaData");
-                HttpURLConnection serverConnection = (HttpURLConnection) url.openConnection();
+        protected List<StoryClass> doInBackground(Double... doubles) {
+            //Pulls the metadata for the events
+            List<StoryClass> response;
+            try {
+                URL queryUrl = new URL(serverAddr
+                        + "metadata"
+                        + "?lat=" + doubles[0]
+                        + "&lng=" + doubles[1]);
+                HttpURLConnection serverConnection = (HttpURLConnection) queryUrl.openConnection();
 
                 try {
                     //variables to read in the data and store it
@@ -71,48 +82,73 @@ public class StoryModel extends AndroidViewModel {
                     jsonReader.close();
 
                     //parses the json string to a list of events
-                    result = parseResponse(jsonBuilder.toString());
+                    response = StoryModel.parseResponse(jsonBuilder.toString());
+
                 } finally {
                     serverConnection.disconnect();
                 }
 
-            } catch(Exception e){
+            } catch (Exception e) {
+                Log.e("EventModel", e.getMessage(), e);
                 return null;
             }
 
-            MutableLiveData output = new MutableLiveData<List<StoryClass>>();
-            output.postValue(result);
+            //for each event, pulls its associated image from the server
+            for (int i = 0; i < response.size(); i++) {
+                try {
+                    //creates a separate connection to the server asking for each image
+                    URL queryUrl = new URL(serverAddr + "storyImage" + "?id=" + response.get(i).getId());
+                    HttpURLConnection serverConnection = (HttpURLConnection) queryUrl.openConnection();
+                    Bitmap bmpResponse = null;
 
-            return output;
+                    //read the response and decode the image
+                    try {
+                        bmpResponse = BitmapFactory.decodeStream(serverConnection.getInputStream());
+                    } finally {
+                        //bind the parsed image to the corresponding EventClass
+                        if(bmpResponse != null && response.get(i) != null) response.get(i).setImg(bmpResponse);
+                        serverConnection.disconnect();
+                    }
+                } catch (Exception e) {
+                    return null;
+                }
+
+            }
+
+            return response;
+        }
+
+        protected void onPostExecute(List<StoryClass> finishedList){
+            if(finishedList == null) { return; }
+            storyList.postValue(finishedList);
         }
     }
 
     private static List<StoryClass> parseResponse(String json){
-        ArrayList<StoryClass> response = null;
+    ArrayList<StoryClass> response = new ArrayList<>();
 
-        try{
-            JSONObject root = new JSONObject(json);
-            JSONArray array = new JSONArray(root.getJSONArray("stories"));
+    try{
+        JSONObject root = new JSONObject(json);
+        JSONArray array = root.getJSONArray("stories");
 
-            for(int i = 0; i < array.length(); i++){
-                double lat;
-                double lng;
-                String id;
-                String caption;
+        for(int i = 0; i < array.length(); i++){
+            double lat;
+            double lng;
+            String id;
+            String caption;
 
-                JSONObject element = array.getJSONObject(i);
-                lat = element.getDouble("lat");
-                lng = element.getDouble("lng");
-                id = element.getString("_id");
-                caption = element.getString("caption");
+            JSONObject element = array.getJSONObject(i);
+            lat = element.getDouble("lat");
+            lng = element.getDouble("lng");
+            id = element.getString("_id");
+            caption = element.getString("caption");
 
-                response.add(new StoryClass(lat, lng, id, caption));
-            }
-
-        } catch (JSONException e){
-
+            response.add(new StoryClass(lat, lng, id, caption));
         }
 
+    } catch (JSONException e) {
+        return null;
+    }
         return response;
     }
 }
