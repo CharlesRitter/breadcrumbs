@@ -20,16 +20,20 @@ public class StoryClass {
         caption = c;
     }
 
-    private double getLat(){
+    public double getLat(){
         return lat;
     }
 
-    private double getLng(){
+    public double getLng(){
         return lng;
     }
 
-    private String getId(){
+    public String getId(){
         return id;
+    }
+
+    public void setImg(Bitmap b){
+        img = b;
     }
 
 }
