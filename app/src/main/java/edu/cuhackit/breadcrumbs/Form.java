@@ -41,9 +41,12 @@ public class Form extends AppCompatActivity {
                     "Please write a caption", Toast.LENGTH_LONG).show();
         }
         else {
-
+            finish();
+            /*
             Intent intent = new Intent(getApplicationContext(), StoryActivity.class);
             startActivity(intent);
+
+             */
         }
     }
 
@@ -60,6 +63,7 @@ public class Form extends AppCompatActivity {
     }
 
     public void onActivityResult(int requestCode,int resultCode,Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
         // Result code is RESULT_OK only if the user selects an Image
         if (resultCode == Activity.RESULT_OK)
             switch (requestCode){
