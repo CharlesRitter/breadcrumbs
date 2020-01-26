@@ -26,7 +26,8 @@ public class Form extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form);
 
-       // mTopToolbar = findViewById(R.id.my_toolbar);
+        imageView = findViewById(R.id.imageView);
+        //mTopToolbar = findViewById(R.id.my_toolbar);
         //setSupportActionBar(mTopToolbar);
 
     }
@@ -38,10 +39,12 @@ public class Form extends AppCompatActivity {
         if (cap_text.length() == 0 ){
             Toast.makeText(getApplicationContext(),
                     "Please write a caption", Toast.LENGTH_LONG).show();
-        } else
-            {
-                //Add caption to database
-            }
+        }
+        else {
+
+            Intent intent = new Intent(getApplicationContext(), StoryActivity.class);
+            startActivity(intent);
+        }
     }
 
     public void pull_gallery(View v){

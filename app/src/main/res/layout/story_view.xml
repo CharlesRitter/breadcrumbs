@@ -13,11 +13,17 @@
         android:scaleType="centerCrop"
         android:background="#000"
         app:layout_constraintTop_toTopOf="parent"/>
+
     <TextView
         android:id="@+id/storyCaption"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="20sp"
         android:minHeight="50dp"
-        android:text="hardcoded"/>
+        android:text="@string/dummy_text"
+        android:textAlignment="viewStart"
+        android:textColor="#E88F2B"
+        android:textSize="20sp"
+        android:textStyle="normal" />
 
 </LinearLayout>
