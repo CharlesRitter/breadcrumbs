@@ -1,19 +1,20 @@
 package edu.cuhackit.breadcrumbs;
 
 import android.Manifest;
-import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
-
 import io.radar.sdk.Radar;
 import io.radar.sdk.model.Coordinate;
 import io.radar.sdk.model.RadarEvent;
@@ -24,8 +25,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.jetbrains.annotations.NotNull;
@@ -35,23 +37,25 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.Observer;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
 
     final static String TAG = "MapsActivity";
 
-    private Double[] currentCoords;
+    private BroadcastReceiver broadcastReceiver;
+    private ArrayList<LatLng> coordList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
-        Intent intent = new Intent(getApplicationContext(), Form.class);
-        startActivity(intent);
-
-        //Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -86,53 +90,146 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onComplete(Radar.RadarStatus status, Location location, RadarEvent[] events, RadarUser user) {
 
-                LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                try {
+                    LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
-                mMap.addMarker(new MarkerOptions().position(currentLocation).title("You are Here"));
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,
-                        20));
+                    mMap.addMarker(new MarkerOptions()
+                            .position(currentLocation)
+                            .title("Start")
+                            .snippet("The Beginning")
+                            //.icon(BitmapDescriptorFactory.fromResource(R.drawable.ball)));
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,
+                            20));
+
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(currentLocation)
+                            .tilt(60)
+                            .zoom(20)
+                            .bearing(0)
+                            .build();
+
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+                } catch(Exception e){
+                    LatLng currentLocation = new LatLng(34.0372, -81.2178);
+
+                    mMap.addMarker(new MarkerOptions()
+                            .position(currentLocation)
+                            .title("Start")
+                            .snippet("The Beginning")
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,
+                            20));
+
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(currentLocation)
+                            .tilt(60)
+                            .zoom(20)
+                            .bearing(0)
+                            .build();
+
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+                }
 
             }
         });
 
         Radar.startTracking();
-        LatLng geofenceCenter = new LatLng(34.676, -82.8369);
-        mMap.addMarker(new MarkerOptions()
-                .position(geofenceCenter)
-                .title("Watt"));
 
-        mMap.setOnMarkerClickListener(marker -> {
-            //if(marker.getTitle() != "Watt") return false;
+        LocationManager locaMana = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        LocationListener locaList = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location flocation) {
+                try {
+                    mMap.clear();
 
-            LatLng markerCoords = marker.getPosition();
+                    LatLng newLocation = new LatLng(flocation.getLatitude(), flocation.getLongitude());
 
-            double lat = markerCoords.latitude;
-            double lng = markerCoords.longitude;
+                    Radar.updateLocation(flocation, new Radar.RadarCallback() {
+                        @Override
+                        public void onComplete(@NotNull Radar.RadarStatus radarStatus, @Nullable Location location, @Nullable RadarEvent[] radarEvents, @Nullable RadarUser radarUser) {
 
-            Intent intent = new Intent(getApplicationContext(), StoryActivity.class);
-            intent.putExtra("lat", lat);
-            intent.putExtra("lng", lng);
+                        }
+                    });
 
-            startActivity(intent);
+                    mMap.addMarker(new MarkerOptions()
+                            .position(newLocation)
+                            .title("You Are Here")
+                            //.icon(BitmapDescriptorFactory.fromResource(R.drawable.ball)));
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
 
-            return true;
-        });
-        /*
-        Log.i(TAG, MyRadarReceiver.getRadarCoords().getValue() + "");
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newLocation,
+                            20));
 
-        MyRadarReceiver.getRadarCoords().observe(this, obs -> {
-            Log.i(TAG, "entered observer");
-           ArrayList<Coordinate> coordList = MyRadarReceiver.getRadarCoords().getValue();
-           Log.i(TAG, "coordList = ");
-           for (Coordinate coord: coordList){
-               Log.i(TAG, "Lat:" + coord.getLatitude());
-               LatLng eventCoord = new LatLng(coord.getLatitude(), coord.getLongitude());
-               mMap.addMarker(new MarkerOptions().position(eventCoord));
-           }
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(newLocation)
+                            .tilt(60)
+                            .zoom(20)
+                            .bearing(0)
+                            .build();
 
-        });
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
-         */
+                } catch(Exception e){
+                    Log.i("Error", e.toString());
+                }
+            }
+
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String s) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String s) {
+
+            }
+        };
+
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        } else{
+            locaMana.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locaList);
+        }
+
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                //Bundle bundle = intent.getExtras();
+                coordList = intent.getParcelableArrayListExtra("list");
+                Log.i(TAG, "list size: " + coordList.size());
+
+                for(LatLng coordinate: coordList){
+                    mMap.addMarker(new MarkerOptions().position(coordinate).title("Watt"));
+                    mMap.setOnMarkerClickListener(marker -> {
+                        //if(marker.getTitle() != "Watt") return false;
+
+                        LatLng markerCoords = marker.getPosition();
+
+                        double lat = markerCoords.latitude;
+                        double lng = markerCoords.longitude;
+
+                        Intent i = new Intent(getApplicationContext(), StoryActivity.class);
+                        i.putExtra("lat", lat);
+                        i.putExtra("lng", lng);
+
+                        startActivity(i);
+
+                        return true;
+                    });
+                }
+            }
+        };
+
+        registerReceiver(broadcastReceiver, new IntentFilter("mycustombroadcast"));
+
     }
 
 
@@ -140,5 +237,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onDestroy(){
         super.onDestroy();
         Radar.stopTracking();
+        unregisterReceiver(broadcastReceiver);
     }
 }
