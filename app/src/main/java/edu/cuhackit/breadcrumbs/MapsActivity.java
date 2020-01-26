@@ -75,8 +75,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
 
-        Radar.initialize("prj_test_pk_b2451fcc967db99f2912c986d8c75cea785ca5d0"); //Jemiah's key
-        //Radar.initialize("prj_test_pk_668bab55b5fbac2e7a4a28247c3d57ccfb5160e3"); //Nikita's key
+        //Radar.initialize("prj_test_pk_b2451fcc967db99f2912c986d8c75cea785ca5d0"); //Jemiah's key
+        Radar.initialize("prj_test_pk_668bab55b5fbac2e7a4a28247c3d57ccfb5160e3"); //Nikita's key
         
         //initial position
         Radar.trackOnce(new Radar.RadarCallback() {
@@ -105,7 +105,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
                 } catch(Exception e){
-                    LatLng currentLocation = new LatLng(0, 0);
+                    LatLng currentLocation = new LatLng(34.0372, -81.2178);
 
                     mMap.addMarker(new MarkerOptions()
                             .position(currentLocation)
@@ -114,6 +114,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,
                             20));
+
                     CameraPosition cameraPosition = new CameraPosition.Builder()
                             .target(currentLocation)
                             .tilt(60)
@@ -133,11 +134,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LocationManager locaMana = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         LocationListener locaList = new LocationListener() {
             @Override
-            public void onLocationChanged(Location location) {
+            public void onLocationChanged(Location flocation) {
                 try {
                     mMap.clear();
 
-                    LatLng newLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                    LatLng newLocation = new LatLng(flocation.getLatitude(), flocation.getLongitude());
+
+                    Radar.updateLocation(flocation, new Radar.RadarCallback() {
+                        @Override
+                        public void onComplete(@NotNull Radar.RadarStatus radarStatus, @Nullable Location location, @Nullable RadarEvent[] radarEvents, @Nullable RadarUser radarUser) {
+
+                        }
+                    });
 
                     mMap.addMarker(new MarkerOptions()
                             .position(newLocation)
