@@ -23,6 +23,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -93,6 +94,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,
                             20));
+
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(currentLocation)
+                            .tilt(60)
+                            .zoom(20)
+                            .bearing(0)
+                            .build();
+
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
                 } catch(Exception e){
                     LatLng currentLocation = new LatLng(0, 0);
 
@@ -103,6 +114,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,
                             20));
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(currentLocation)
+                            .tilt(60)
+                            .zoom(20)
+                            .bearing(0)
+                            .build();
+
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
                 }
 
             }
@@ -122,12 +142,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     mMap.addMarker(new MarkerOptions()
                             .position(newLocation)
                             .title("You Are Here")
-                            .snippet("Somethingsomethingsomething")
                             //.icon(BitmapDescriptorFactory.fromResource(R.drawable.ball)));
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
 
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newLocation,
                             20));
+
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(newLocation)
+                            .tilt(60)
+                            .zoom(20)
+                            .bearing(0)
+                            .build();
+
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
                 } catch(Exception e){
                     Log.i("Error", e.toString());
