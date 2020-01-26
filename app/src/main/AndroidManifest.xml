@@ -37,6 +37,18 @@
             android:name=".MapsActivity">
 
         </activity>
+
+        <receiver
+            android:name=".MyRadarReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="io.radar.sdk.RECEIVED" />
+            </intent-filter>
+        </receiver>
+
     </application>
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
 </manifest>
