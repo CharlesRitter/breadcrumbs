@@ -25,8 +25,10 @@ public class Form extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form);
-        mTopToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(mTopToolbar);
+        imageView = (ImageView) findViewById(R.id.imageView);
+        
+        //mTopToolbar = findViewById(R.id.my_toolbar);
+        //setSupportActionBar(mTopToolbar);
 
     }
 
@@ -63,6 +65,7 @@ public class Form extends AppCompatActivity {
                     //data.getData returns the content URI for the selected Image
                     Uri selectedImage = data.getData();
                     imageView.setImageURI(selectedImage);
+
                     break;
             }
     }
