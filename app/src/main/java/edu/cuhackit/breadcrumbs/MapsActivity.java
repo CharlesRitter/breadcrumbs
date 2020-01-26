@@ -1,6 +1,8 @@
 package edu.cuhackit.breadcrumbs;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -9,6 +11,9 @@ import android.util.Log;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
+
 import io.radar.sdk.Radar;
 import io.radar.sdk.model.Coordinate;
 import io.radar.sdk.model.RadarEvent;
@@ -20,12 +25,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import android.content.Context;
 
+import java.util.ArrayList;
 import java.util.Observer;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -85,7 +92,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         Radar.startTracking();
+        LatLng geofenceCenter = new LatLng(34.676, -82.8369);
+        mMap.addMarker(new MarkerOptions()
+                .position(geofenceCenter)
+                .title("Watt"));
 
+        mMap.setOnMarkerClickListener(marker -> {
+            //if(marker.getTitle() != "Watt") return false;
+
+            LatLng markerCoords = marker.getPosition();
+
+            double lat = markerCoords.latitude;
+            double lng = markerCoords.longitude;
+
+            Intent intent = new Intent(getApplicationContext(), StoryActivity.class);
+            intent.putExtra("lat", lat);
+            intent.putExtra("lng", lng);
+
+            startActivity(intent);
+
+            return true;
+        });
+        /*
+        Log.i(TAG, MyRadarReceiver.getRadarCoords().getValue() + "");
+
+        MyRadarReceiver.getRadarCoords().observe(this, obs -> {
+            Log.i(TAG, "entered observer");
+           ArrayList<Coordinate> coordList = MyRadarReceiver.getRadarCoords().getValue();
+           Log.i(TAG, "coordList = ");
+           for (Coordinate coord: coordList){
+               Log.i(TAG, "Lat:" + coord.getLatitude());
+               LatLng eventCoord = new LatLng(coord.getLatitude(), coord.getLongitude());
+               mMap.addMarker(new MarkerOptions().position(eventCoord));
+           }
+
+        });
+
+         */
     }
 
 
