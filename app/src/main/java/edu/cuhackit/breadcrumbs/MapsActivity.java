@@ -9,6 +9,9 @@ import android.util.Log;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
+
 import io.radar.sdk.Radar;
 import io.radar.sdk.model.Coordinate;
 import io.radar.sdk.model.RadarEvent;
@@ -26,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import android.content.Context;
 
+import java.util.ArrayList;
 import java.util.Observer;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -85,6 +89,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         Radar.startTracking();
+        LatLng geofenceCenter = new LatLng(34.67600673480939, -82.83691123558198);
+        mMap.addMarker(new MarkerOptions().position(geofenceCenter).title("Watt"));
+        /*
+        Log.i(TAG, MyRadarReceiver.getRadarCoords().getValue() + "");
+
+        MyRadarReceiver.getRadarCoords().observe(this, obs -> {
+            Log.i(TAG, "entered observer");
+           ArrayList<Coordinate> coordList = MyRadarReceiver.getRadarCoords().getValue();
+           Log.i(TAG, "coordList = ");
+           for (Coordinate coord: coordList){
+               Log.i(TAG, "Lat:" + coord.getLatitude());
+               LatLng eventCoord = new LatLng(coord.getLatitude(), coord.getLongitude());
+               mMap.addMarker(new MarkerOptions().position(eventCoord));
+           }
+
+        });
+
+         */
     }
 
 
