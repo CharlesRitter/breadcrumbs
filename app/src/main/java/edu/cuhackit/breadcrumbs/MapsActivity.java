@@ -34,6 +34,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import android.content.Context;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Observer;
 
@@ -138,6 +140,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Radar.startTracking();
 
+        /*
         LocationManager locaMana = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         LocationListener locaList = new LocationListener() {
             @Override
@@ -193,11 +196,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         };
 
+
+
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         } else{
             locaMana.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locaList);
         }
+         */
 
         broadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -207,7 +213,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.i(TAG, "list size: " + coordList.size());
 
                 for(LatLng coordinate: coordList){
-                    mMap.addMarker(new MarkerOptions().position(coordinate).title("Watt"));
+                    //Log.i(TAG, coordinate.latitude + " " + coordinate.longitude);
+                    DecimalFormat df = new DecimalFormat("##.0000");
+                    df.setRoundingMode(RoundingMode.DOWN);
+                    //df.setMinimumFractionDigits(4);
+                    double tempLat = Double.parseDouble(df.format(coordinate.latitude));
+                    double tempLong = Double.parseDouble(df.format(coordinate.longitude));
+                    LatLng truncatedCoord = new LatLng(tempLat, tempLong);
+                    Log.i(TAG, "tempLat: " + tempLat + "\n" +
+                            "tempLong: " + tempLong);
+
+
+                    mMap.addMarker(new MarkerOptions().position(truncatedCoord).title("Watt"));
                     mMap.setOnMarkerClickListener(marker -> {
                         //if(marker.getTitle() != "Watt") return false;
 
@@ -229,7 +246,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         };
 
         registerReceiver(broadcastReceiver, new IntentFilter("mycustombroadcast"));
-
     }
 
 
