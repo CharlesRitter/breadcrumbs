@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -47,5 +48,10 @@ public class StoryActivity extends AppCompatActivity {
         StoryModel model = ViewModelProviders.of(this).get(StoryModel.class);
         model.reset();
         super.onDestroy();
+    }
+
+    public void post_a_post(View v){
+        Intent intent = new Intent(getApplicationContext(), Form.class);
+        startActivity(intent);
     }
 }

@@ -24,6 +24,6 @@
         android:textAlignment="viewStart"
         android:textColor="#E88F2B"
         android:textSize="20sp"
-        android:textStyle="bold" />
+        android:textStyle="normal" />
 
 </LinearLayout>

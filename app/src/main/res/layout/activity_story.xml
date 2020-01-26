@@ -5,6 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/stories"
         android:layout_width="0dp"
@@ -22,9 +23,37 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        app:srcCompat="@drawable/ic_add_black_48dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:onClick="post_a_post"
+        android:tint="#FFF"
+        app:backgroundTint="#e88f2b"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:tint="#FFF"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_add_black_48dp" />
+
+    <android.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:textAlignment="center"
+        android:titleTextColor="#FFFFFF"
+        android:visibility="visible"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Crumbs"
+            android:textColor="#FFFFFF"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            tools:layout_editor_absoluteX="140dp"
+            tools:layout_editor_absoluteY="8dp" />
+
+
+    </android.widget.Toolbar>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
