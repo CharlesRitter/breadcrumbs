@@ -18,6 +18,7 @@ public class StoryClass {
         lng = ln;
         id = i;
         caption = c;
+        img = null;
     }
 
     public String getCap(){

@@ -33,8 +33,10 @@ public class StoryModel extends AndroidViewModel {
     }
 
     public static LiveData<List<StoryClass>> getStoryList(double lat, double lng){
-        storyList = new MutableLiveData<>();
-        loadStories(lat, lng);
+        if(storyList == null) {
+            storyList = new MutableLiveData<>();
+            loadStories(lat, lng);
+        }
 
         return storyList;
     }
@@ -46,6 +48,12 @@ public class StoryModel extends AndroidViewModel {
 
         new QueryStories().execute(inputArr);
     }
+
+
+    public void reset(){
+        storyList = null;
+    }
+
 
     public static class QueryStories extends AsyncTask<Double, Void, List<StoryClass>>{
 
@@ -74,7 +82,7 @@ public class StoryModel extends AndroidViewModel {
                     jsonReader.close();
 
                     //parses the json string to a list of events
-                    response = parseResponse(jsonBuilder.toString());
+                    response = StoryModel.parseResponse(jsonBuilder.toString());
 
                 } finally {
                     serverConnection.disconnect();
@@ -85,63 +93,62 @@ public class StoryModel extends AndroidViewModel {
                 return null;
             }
 
+            //for each event, pulls its associated image from the server
+            for (int i = 0; i < response.size(); i++) {
+                try {
+                    //creates a separate connection to the server asking for each image
+                    URL queryUrl = new URL(serverAddr + "storyImage" + "?id=" + response.get(i).getId());
+                    HttpURLConnection serverConnection = (HttpURLConnection) queryUrl.openConnection();
+                    Bitmap bmpResponse = null;
+
+                    //read the response and decode the image
+                    try {
+                        bmpResponse = BitmapFactory.decodeStream(serverConnection.getInputStream());
+                    } finally {
+                        //bind the parsed image to the corresponding EventClass
+                        if(bmpResponse != null && response.get(i) != null) response.get(i).setImg(bmpResponse);
+                        serverConnection.disconnect();
+                    }
+                } catch (Exception e) {
+                    return null;
+                }
+
+            }
+
             return response;
         }
 
         protected void onPostExecute(List<StoryClass> finishedList){
             if(finishedList == null) { return; }
-            storyList.setValue(finishedList);
+            storyList.postValue(finishedList);
         }
     }
 
     private static List<StoryClass> parseResponse(String json){
-        ArrayList<StoryClass> response = new ArrayList<>();
+    ArrayList<StoryClass> response = new ArrayList<>();
 
-        try{
-            JSONObject root = new JSONObject(json);
-            JSONArray array = new JSONArray(root.getJSONArray("stories"));
-            Log.i("URL", json);
+    try{
+        JSONObject root = new JSONObject(json);
+        JSONArray array = root.getJSONArray("stories");
 
-            for(int i = 0; i < array.length(); i++){
-                double lat;
-                double lng;
-                String id;
-                String caption;
+        for(int i = 0; i < array.length(); i++){
+            double lat;
+            double lng;
+            String id;
+            String caption;
 
-                JSONObject element = array.getJSONObject(i);
-                lat = element.getDouble("lat");
-                lng = element.getDouble("lng");
-                id = element.getString("_id");
-                caption = element.getString("caption");
+            JSONObject element = array.getJSONObject(i);
+            lat = element.getDouble("lat");
+            lng = element.getDouble("lng");
+            id = element.getString("_id");
+            caption = element.getString("caption");
 
-                response.add(new StoryClass(lat, lng, id, caption));
-            }
-
-        } catch (JSONException e){
-
+            response.add(new StoryClass(lat, lng, id, caption));
         }
 
-        for (int i = 0; i < response.size(); i++) {
-            try {
-                //creates a separate connection to the server asking for each image
-                URL queryUrl = new URL(serverAddr + "storyImage" + "?id=" + response.get(i).getId());
-                HttpURLConnection iHConnection = (HttpURLConnection) queryUrl.openConnection();
-                Bitmap bmpResponse = null;
-
-                //read the response and decode the image
-                try {
-                    bmpResponse = BitmapFactory.decodeStream(iHConnection.getInputStream());
-                } finally {
-                    //bind the parsed image to the corresponding EventClass
-                    if(bmpResponse != null && response.get(i) != null) response.get(i).setImg(bmpResponse);
-                    iHConnection.disconnect();
-                }
-            } catch (Exception e) {
-                Log.e("EventModel", e.getMessage(), e);
-                return null;
-            }
-        }
-
+    } catch (JSONException e) {
+        return null;
+    }
         return response;
     }
 }

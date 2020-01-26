@@ -2,11 +2,13 @@ package edu.cuhackit.breadcrumbs;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.OnConflictStrategy;
 
 import java.util.List;
 
@@ -38,7 +40,12 @@ public class StoryActivity extends AppCompatActivity {
             StoryAdapter inputAdapter = new StoryAdapter(storyList);
             storyView.setAdapter(inputAdapter);
         });
+    }
 
-
+    @Override
+    protected void onDestroy() {
+        StoryModel model = ViewModelProviders.of(this).get(StoryModel.class);
+        model.reset();
+        super.onDestroy();
     }
 }

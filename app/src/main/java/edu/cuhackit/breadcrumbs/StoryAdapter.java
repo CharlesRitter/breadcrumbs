@@ -1,5 +1,6 @@
 package edu.cuhackit.breadcrumbs;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ImageView;
