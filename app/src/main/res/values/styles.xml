@@ -8,4 +8,9 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="navBar">
+        <item name="android:background">#E88F2B</item>
+        <item name="android:text">New Post</item>
+    </style>
+
 </resources>

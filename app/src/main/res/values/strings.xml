@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">breadcrumbs</string>
     <string name="title_activity_maps">Map</string>
+    <string name="top_name_post">New Post</string>
+    <string name="share_post">Share</string>
+    <string name="caption_post">Caption</string>
+    <string name="prompt_post">start typing here...</string>
+    <string name="temp_image">uploadImage</string>
+    <string name="pinWhite">pinW</string>
+    <string name="form_name">formName</string>
 </resources>
