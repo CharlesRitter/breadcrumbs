@@ -26,8 +26,8 @@ public class Form extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form);
 
-        mTopToolbar = findViewById(R.id.my_toolbar);
-        setSupportActionBar(mTopToolbar);
+       // mTopToolbar = findViewById(R.id.my_toolbar);
+        //setSupportActionBar(mTopToolbar);
 
     }
 
