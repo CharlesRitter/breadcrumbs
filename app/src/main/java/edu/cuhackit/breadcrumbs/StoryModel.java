@@ -1,20 +1,16 @@
 package edu.cuhackit.breadcrumbs;
 
 import android.app.Application;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,33 +22,85 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.radar.sdk.Radar;
-import io.radar.sdk.RadarReceiver;
-import io.radar.sdk.model.Coordinate;
-import io.radar.sdk.model.RadarCircleGeometry;
-import io.radar.sdk.model.RadarEvent;
-import io.radar.sdk.model.RadarUser;
-
 public class StoryModel extends AndroidViewModel {
 
     public static final String serverAddr = "http://34.203.71.55:11664/";
 
-    private static LiveData<List<StoryClass>> storyList;
-
-    private static LiveData<Double[]> currentCoordinates;
-
-    private static LiveData<ArrayList<Coordinate>> radarCoords;
+    private static MutableLiveData<List<StoryClass>> storyList;
 
     public StoryModel(@NonNull Application application) {
         super(application);
     }
 
+    public static LiveData<List<StoryClass>> getStoryList(double lat, double lng){
+        storyList = new MutableLiveData<>();
+        loadStories(lat, lng);
+
+        return storyList;
+    }
+
+    public static void loadStories(double lat, double lng){
+        Double[] inputArr = new Double[2];
+        inputArr[0] = lat;
+        inputArr[1] = lng;
+
+        new QueryStories().execute(inputArr);
+    }
+
+    public static class QueryStories extends AsyncTask<Double, Void, List<StoryClass>>{
+
+        @Override
+        protected List<StoryClass> doInBackground(Double... doubles) {
+            //Pulls the metadata for the events
+            List<StoryClass> response;
+            try {
+                URL queryUrl = new URL(serverAddr
+                        + "metadata"
+                        + "?lat=" + doubles[0]
+                        + "&lng=" + doubles[1]);
+                HttpURLConnection serverConnection = (HttpURLConnection) queryUrl.openConnection();
+
+                try {
+                    //variables to read in the data and store it
+                    BufferedReader jsonReader = new BufferedReader(new InputStreamReader(serverConnection.getInputStream()));
+                    StringBuilder jsonBuilder = new StringBuilder();
+
+                    String eqData;
+
+                    //reads in each line of json data and adds it to the jsonBuilder
+                    while ((eqData = jsonReader.readLine()) != null) {
+                        jsonBuilder.append(eqData).append('\n');
+                    }
+                    jsonReader.close();
+
+                    //parses the json string to a list of events
+                    response = parseResponse(jsonBuilder.toString());
+
+                } finally {
+                    serverConnection.disconnect();
+                }
+
+            } catch (Exception e) {
+                Log.e("EventModel", e.getMessage(), e);
+                return null;
+            }
+
+            return response;
+        }
+
+        protected void onPostExecute(List<StoryClass> finishedList){
+            if(finishedList == null) { return; }
+            storyList.setValue(finishedList);
+        }
+    }
+
     private static List<StoryClass> parseResponse(String json){
-        ArrayList<StoryClass> response = null;
+        ArrayList<StoryClass> response = new ArrayList<>();
 
         try{
             JSONObject root = new JSONObject(json);
             JSONArray array = new JSONArray(root.getJSONArray("stories"));
+            Log.i("URL", json);
 
             for(int i = 0; i < array.length(); i++){
                 double lat;
@@ -85,16 +133,14 @@ public class StoryModel extends AndroidViewModel {
                     bmpResponse = BitmapFactory.decodeStream(iHConnection.getInputStream());
                 } finally {
                     //bind the parsed image to the corresponding EventClass
-                    if(bmpResponse != null && response.get(i) != null) response.get(i).setBmp(bmpResponse);
+                    if(bmpResponse != null && response.get(i) != null) response.get(i).setImg(bmpResponse);
                     iHConnection.disconnect();
                 }
             } catch (Exception e) {
                 Log.e("EventModel", e.getMessage(), e);
                 return null;
             }
-
         }
-        return eventResponse;
 
         return response;
     }

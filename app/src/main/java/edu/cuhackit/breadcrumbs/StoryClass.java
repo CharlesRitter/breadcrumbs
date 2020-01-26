@@ -20,6 +20,10 @@ public class StoryClass {
         caption = c;
     }
 
+    public String getCap(){
+        return caption;
+    }
+
     public double getLat(){
         return lat;
     }
@@ -34,6 +38,10 @@ public class StoryClass {
 
     public void setImg(Bitmap b){
         img = b;
+    }
+
+    public Bitmap getImg(){
+        return img;
     }
 
 }
